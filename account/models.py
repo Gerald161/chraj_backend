@@ -42,8 +42,8 @@ class Account(AbstractBaseUser):
     username = models.CharField(max_length=40, unique=True, error_messages={'unique': 'This username has already been taken'})
     # unique fields below
     # profile_image = models.ImageField(null=True, default="default.jpg")
-    full_name = models.CharField(max_length=50, null=True)
-    staff_id = models.CharField(max_length=8, null=True, unique=True, error_messages={'unique': 'This staff ID has already been taken'})
+    full_name = models.CharField(max_length=50)
+    staff_id = models.CharField(max_length=8, unique=True, error_messages={'unique': 'This staff ID has already been taken'})
     #ends here
     date_joined = models.DateTimeField(verbose_name='date joined', auto_now_add=True)
     last_login = models.DateTimeField(verbose_name='last login', auto_now=True)

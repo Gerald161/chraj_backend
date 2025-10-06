@@ -5,7 +5,6 @@ from .models import Account
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
         model = Account
-        # fields = ["email", "password", "username"]
         fields = ["email", "password"]
 
 

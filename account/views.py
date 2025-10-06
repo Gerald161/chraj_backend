@@ -52,6 +52,7 @@ def generate_unique_username(full_name):
     
     # If all variants are taken (or single name), append numbers
     counter = 1
+    
     while True:
         new_username = f"{base}{counter}"
         if not User.objects.filter(username=new_username).exists():
@@ -62,6 +63,7 @@ def generate_unique_username(full_name):
 class signup(APIView):
     def post(self, request, *args, **kwargs):
         serializer = AccountSerializer(data=request.data)
+
         if serializer.is_valid():
             full_name = request.data.get("full_name")
             staff_id = request.data.get("staff_id")
@@ -80,6 +82,13 @@ class signup(APIView):
                     "staff_id": "This field is required"
                     })
             else:
+                User = get_user_model()
+
+                if User.objects.filter(staff_id=staff_id.lower().strip()).exists():
+                    return Response({
+                        "staff_id": "Please enter a unique staff ID"
+                    })
+
                 username = generate_unique_username(full_name=full_name)
 
                 serializer.validated_data["password"] = make_password(serializer.validated_data.get("password"))
@@ -161,11 +170,14 @@ class deleteAccount(APIView):
 
 class RequestPasswordResetEmail(APIView):
     def post(self, request):
-        email = request.data.get("email").lower().strip()
+        email = request.data.get("email")
+
+        if not email:
+            return Response({'email': 'Please specify your email'})
 
         User = get_user_model()
 
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email=email.lower().strip()).exists():
             user = User.objects.get(email=email)
             
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
@@ -208,6 +220,9 @@ class PasswordTokenCheckAPI(APIView):
             User = get_user_model()
 
             password = request.data.get("password")
+
+            if not password:
+                return Response({'password': 'Please enter your new password'})
 
             id = force_str(urlsafe_base64_decode(uidb64))
 

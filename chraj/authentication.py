@@ -32,10 +32,10 @@ class AccountBackend(BaseBackend):
                 except User.DoesNotExist:
                     return None
 
-    def get_user(self, user_id):
+    def get_user(self, staff_id):
         User = get_user_model()
         
         try:
-            return User.objects.get(pk=user_id)
+            return User.objects.get(pk=staff_id)
         except User.DoesNotExist:
             return None
