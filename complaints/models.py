@@ -5,26 +5,32 @@ from django.conf import settings
 class Complaint(models.Model):
     title = models.CharField(max_length=300)
     description = models.CharField(max_length=300)
-    slug = models.SlugField(null=True) #auto added
-    case_id = models.CharField(max_length=300) #auto added
     location = models.CharField(max_length=300)
     complainant = models.CharField(max_length=300)
     complainant_email = models.CharField(max_length=300)
     respondent = models.CharField(max_length=300)
     respondent_email = models.CharField(max_length=300)
-    time_filed = models.DateTimeField(auto_now_add=True) #auto added
-    case_officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True) #auto added
-    isWithinMandate = models.BooleanField(null=True)
+    time_filed = models.DateTimeField(auto_now_add=True) #system auto added
+    case_id = models.CharField(max_length=300, unique=True) #auto added
+    complainant_reference_id = models.CharField(max_length=300, unique=True, null=True) #auto added
+    respondent_reference_id = models.CharField(max_length=300, unique=True, null=True) #auto added
+    case_officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True) #later added
+    isWithinMandate = models.BooleanField(null=True) #later added
 
 
     def __str__(self):
-        return str(self.slug)
+        return str(self.title)
 
 
 
-class CaseDocuments(models.Model):
+class CaseFile(models.Model):
     document = models.FileField()
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return str(self.complaint)
+    
 
     def delete(self, *args, **kwargs):
         self.document.delete()
