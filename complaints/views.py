@@ -1,6 +1,7 @@
 from .models import Complaint, CaseFile
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 
 class createComplaint(APIView):
     def post(self, request, *args, **kwargs):
@@ -17,8 +18,6 @@ class createComplaint(APIView):
 
         if errors:
             return Response(errors)
-        
-        # print(Complaint.objects.count() + 1)
 
         complaint = Complaint()
 
@@ -51,3 +50,42 @@ class createComplaint(APIView):
         return Response({
             'status': "saved", 
         })
+    
+
+class mandateDecision(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        required_fields = [
+            "case_id", "mandate_decision",
+        ]
+
+        errors = {}
+
+        for field in required_fields:
+            if not request.data.get(field):
+                errors[field] = "This field is required"
+
+        if errors:
+            return Response(errors)
+        
+        case_id = request.data.get("case_id")
+
+        mandate_decision = request.data.get("mandate_decision")
+
+        complaint = Complaint.objects.filter(case_id__iexact=case_id).first()
+
+        if complaint:
+            complaint.isWithinMandate = eval(mandate_decision)
+
+            complaint.case_officer = request.user
+
+            complaint.save()
+
+            return Response({
+                'status': "Saved", 
+            })
+        else:
+            return Response({
+                'case_id': "No such record", 
+            })
