@@ -1,4 +1,4 @@
-from .models import Complaint, CaseFile
+from .models import Complaint, CaseFile, RequestedDocument
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -88,4 +88,48 @@ class mandateDecision(APIView):
         else:
             return Response({
                 'case_id': "No such record", 
+            })        
+
+
+class investigationFindings(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        investigation_notes = request.data.get("investigation_notes")
+        
+        if not investigation_notes:
+            return Response({
+                'investigation_notes': "Please include your investigation notes", 
             })
+        
+        complaint = Complaint.objects.filter(case_id__iexact=slug).first()
+
+        if complaint:
+            complaint.investigation_notes = investigation_notes
+
+            complaint.save()
+
+            for key, value in request.data.items():
+                if key == "investigation_notes":
+                    continue
+
+                if RequestedDocument.objects.filter(complaint=complaint).filter(name=value).filter(step_requested="investigation").first():
+                    continue
+
+                requestedDocument = RequestedDocument()
+
+                requestedDocument.name = value
+
+                requestedDocument.complaint = complaint
+
+                requestedDocument.save()
+            
+            return Response({
+                'status': "Investigation step complete", 
+            })
+        else:
+            return Response({
+            'complaint': "Case not found", 
+        })    
