@@ -109,6 +109,8 @@ class investigationFindings(APIView):
         if complaint:
             complaint.investigation_notes = investigation_notes
 
+            complaint.case_status = "investigation"
+
             complaint.save()
 
             for key, value in request.data.items():

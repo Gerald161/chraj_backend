@@ -3,6 +3,12 @@ from django.conf import settings
 
 # Create your models here.
 class Complaint(models.Model):
+    STATUS_CHOICES = [
+        ("initial", "initial"), ("investigation", "investigation"), 
+        ("hearing", "hearing"), ("mediation", "mediation"),
+        ("decision", "decision"), ("resolved", "resolved")
+    ]
+
     title = models.CharField(max_length=300)
     description = models.CharField(max_length=300)
     location = models.CharField(max_length=300)
@@ -16,7 +22,7 @@ class Complaint(models.Model):
     respondent_reference_id = models.CharField(max_length=300, unique=True, null=True) #auto added
     investigation_notes = models.CharField(max_length=300, null=True) #later added
     case_officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True) #later added
-    case_status = models.CharField(max_length=300, default="initial")
+    case_status = models.CharField(max_length=300, default="initial", choices=STATUS_CHOICES)
     isWithinMandate = models.BooleanField(null=True) #later added
 
 
