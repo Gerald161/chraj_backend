@@ -65,3 +65,42 @@ class RequestedDocument(models.Model):
 
     def __str__(self):
         return str(self.name)
+    
+
+
+class Appointment(models.Model):
+    TYPE_CHOICES = [
+        ("hearing", "hearing"),
+        ("mediation", "mediation")
+    ]
+
+    ATTENDEE_CHOICES = [
+        ("complainant", "complainant"),
+        ("respondent", "respondent"),
+        ("both", "both")
+    ]
+
+    date = models.CharField(max_length=300)
+    time = models.CharField(max_length=300)
+    type = models.CharField(default="mediation", choices=TYPE_CHOICES)
+    venue = models.CharField(max_length=300)
+    purpose = models.CharField(max_length=300)
+    attendee = models.CharField(max_length=300, default="both", choices=ATTENDEE_CHOICES)
+    complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE)
+
+
+    def __str__(self):
+        return str(self.purpose)
+
+
+class AppointmentDocument(models.Model): 
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    name = models.CharField(max_length=300)
+
+    def __str__(self):
+        return str(self.name)
+
+
+class Term(models.Model): 
+    term_detail = models.CharField()
+    complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE)

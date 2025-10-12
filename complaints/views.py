@@ -1,4 +1,4 @@
-from .models import Complaint, CaseFile, RequestedDocument
+from .models import Complaint, CaseFile, RequestedDocument, Appointment, AppointmentDocument
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -80,6 +80,8 @@ class mandateDecision(APIView):
 
             complaint.case_officer = request.user
 
+            complaint.case_status = "investigation"
+
             complaint.save()
 
             return Response({
@@ -109,7 +111,7 @@ class investigationFindings(APIView):
         if complaint:
             complaint.investigation_notes = investigation_notes
 
-            complaint.case_status = "investigation"
+            complaint.case_status = "hearing"
 
             complaint.save()
 
@@ -135,3 +137,120 @@ class investigationFindings(APIView):
             return Response({
             'complaint': "Case not found", 
         })    
+
+
+
+class hearing(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        required_fields = [
+            "date", "time", "venue", "purpose", "attendee"
+        ]
+
+        errors = {}
+
+        for field in required_fields:
+            if not request.data.get(field):
+                errors[field] = "This field is required"
+
+        if errors:
+            return Response(errors)
+
+        complaint = Complaint.objects.filter(case_id__iexact=slug).first()
+
+        if complaint:
+            appointment = Appointment()
+
+            appointment.date = request.data.get("date")
+
+            appointment.time = request.data.get("time")
+
+            appointment.type = "hearing"
+
+            appointment.venue = request.data.get("venue")
+
+            appointment.purpose = request.data.get("purpose")
+
+            appointment.attendee = request.data.get("attendee")
+
+            appointment.complaint = complaint
+
+            appointment.save()
+
+            for key, value in request.data.items():
+                if key in required_fields:
+                    continue
+
+                appointmentDocument = AppointmentDocument()
+
+                appointmentDocument.appointment = appointment
+
+                appointmentDocument.name = value
+
+                appointmentDocument.save()
+
+            complaint.case_status = "mediation"
+
+            complaint.save()
+
+            return Response({
+                'status': "Saved", 
+            })
+        else:
+            return Response({
+                'complaint': "Case not found", 
+            })
+        
+
+class mediation(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        required_fields = [
+            "date", "time", "venue", "purpose"
+        ]
+
+        errors = {}
+
+        for field in required_fields:
+            if not request.data.get(field):
+                errors[field] = "This field is required"
+
+
+        if errors:
+            return Response(errors)
+
+
+        complaint = Complaint.objects.filter(case_id__iexact=slug).first()
+
+        if complaint:
+            appointment = Appointment()
+
+            appointment.date = request.data.get("date")
+
+            appointment.time = request.data.get("time")
+
+            appointment.venue = request.data.get("venue")
+
+            appointment.purpose = request.data.get("purpose")
+
+            appointment.complaint = complaint
+
+            appointment.save()
+
+            complaint.case_status = "decision"
+
+            complaint.save()
+
+            return Response({
+                'status': "Saved", 
+            })
+        else:
+            return Response({
+                'complaint': "Case not found", 
+            })
