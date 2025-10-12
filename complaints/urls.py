@@ -8,4 +8,5 @@ urlpatterns = [
     path('investigation-findings/<slug:slug>', views.investigationFindings.as_view()),
     path('hearing/<slug:slug>', views.hearing.as_view()),
     path('mediation/<slug:slug>', views.mediation.as_view()),
+    path('decision/<slug:slug>', views.decision.as_view()),
 ]

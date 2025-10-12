@@ -20,7 +20,9 @@ class Complaint(models.Model):
     case_id = models.CharField(max_length=300, unique=True) #auto added
     complainant_reference_id = models.CharField(max_length=300, unique=True, null=True) #auto added
     respondent_reference_id = models.CharField(max_length=300, unique=True, null=True) #auto added
-    investigation_notes = models.CharField(max_length=300, null=True) #later added
+    investigation_notes = models.CharField(null=True) #later added
+    final_officer_notes = models.CharField(null=True) #later added
+    resolved_positively = models.BooleanField(null=True) #later added
     case_officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True) #later added
     case_status = models.CharField(max_length=300, default="initial", choices=STATUS_CHOICES)
     isWithinMandate = models.BooleanField(null=True) #later added
@@ -104,3 +106,6 @@ class AppointmentDocument(models.Model):
 class Term(models.Model): 
     term_detail = models.CharField()
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return str(self.complaint)

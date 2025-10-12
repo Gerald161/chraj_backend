@@ -1,4 +1,4 @@
-from .models import Complaint, CaseFile, RequestedDocument, Appointment, AppointmentDocument
+from .models import Complaint, CaseFile, RequestedDocument, Appointment, AppointmentDocument, Term
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -249,6 +249,59 @@ class mediation(APIView):
 
             return Response({
                 'status': "Saved", 
+            })
+        else:
+            return Response({
+                'complaint': "Case not found", 
+            })
+        
+
+
+class decision(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        required_fields = [
+            "final_officer_notes", "resolved_positively"
+        ]
+
+        errors = {}
+
+        for field in required_fields:
+            if not request.data.get(field):
+                errors[field] = "This field is required"
+
+        if errors:
+            return Response(errors)
+
+        complaint = Complaint.objects.filter(case_id__iexact=slug).first()
+
+        if complaint:
+            complaint.final_officer_notes = request.data.get("final_officer_notes")
+
+            complaint.case_status = "resolved"
+
+            complaint.resolved_positively = eval(request.data.get("resolved_positively"))
+
+            complaint.save()
+
+            for key, value in request.data.items():
+                if key in required_fields:
+                    continue
+
+                term = Term()
+
+                term.term_detail = value
+
+                term.complaint = complaint
+
+                term.save()
+
+            return Response({
+                'status': "Saved",
+                "case": "resolved" 
             })
         else:
             return Response({
