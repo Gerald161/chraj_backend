@@ -87,8 +87,11 @@ class Appointment(models.Model):
     type = models.CharField(default="mediation", choices=TYPE_CHOICES)
     venue = models.CharField(max_length=300)
     purpose = models.CharField(max_length=300)
+    respondent_attending = models.BooleanField(default=False)
+    complainant_attending = models.BooleanField(default=False)
     attendee = models.CharField(max_length=300, default="both", choices=ATTENDEE_CHOICES)
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE)
+    case_officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
 
 
     def __str__(self):
@@ -109,3 +112,23 @@ class Term(models.Model):
 
     def __str__(self):
         return str(self.complaint)
+    
+
+
+class Notification(models.Model):    
+    REQUESTER_CHOICES = [
+        ("respondent", "respondent"), 
+        ("complainant", "complainant")
+    ]
+
+    requester = models.CharField(choices=REQUESTER_CHOICES)
+    appointment = models.ForeignKey(Appointment, on_delete=models.CASCADE)
+    case_officer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    date = models.CharField(max_length=300, null=True)
+    time = models.CharField(max_length=300, null=True)
+    is_read = models.BooleanField(default=False)
+    time_requester_notified = models.DateTimeField(auto_now_add=True, null=True) #never make this null
+
+
+    def __str__(self):
+        return str(self.appointment)

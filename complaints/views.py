@@ -1,4 +1,4 @@
-from .models import Complaint, CaseFile, RequestedDocument, Appointment, AppointmentDocument, Term
+from .models import Complaint, CaseFile, RequestedDocument, Appointment, AppointmentDocument, Term, Notification
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -306,4 +306,195 @@ class decision(APIView):
         else:
             return Response({
                 'complaint': "Case not found", 
+            })
+        
+
+class allAppointments(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        appointments = Appointment.objects.filter(case_officer=request.user)
+        
+        all_appointments = []
+
+        for appointment in appointments:
+            all_appointments.append({
+                "appointment_id": appointment.id, 
+                "type": appointment.type,
+                "purpose": appointment.purpose,
+                "date": appointment.date,
+                "time": appointment.time,
+                "venue": appointment.venue,
+                "case_id": appointment.complaint.case_id,
+                "complainant": appointment.complaint.complainant,
+                "respondent": appointment.complaint.respondent
+            })
+
+        return Response({
+            "appointments": all_appointments
+        })
+    
+
+class appointment(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        appointment = Appointment.objects.filter(id=slug).first()
+
+        if appointment:
+            return Response({
+                "appointment": {
+                    "type": appointment.type,
+                    "purpose": appointment.purpose,
+                    "date": appointment.date,
+                    "time": appointment.time,
+                    "venue": appointment.venue,
+                    "case_id": appointment.complaint.case_id,
+                    "complainant": appointment.complaint.complainant,
+                    "respondent": appointment.complaint.respondent
+                }
+            })
+        else:
+            return Response({
+                "appointment": "No appointment found"
+            })
+    
+
+class allNotifications(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        notifications = Notification.objects.filter(case_officer=request.user)
+        
+        all_notifications = []
+
+        for notification in notifications:
+            all_notifications.append({
+                "requester": notification.requester,
+                "date": notification.date,
+                "time": notification.time,
+                "is_read": notification.is_read,
+                "appointment_id": notification.appointment.id
+            })
+
+        return Response({
+            "notifications": all_notifications
+        })    
+
+
+class confirmAttendance(APIView):
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        attendee = request.data.get("attendee")
+
+        if attendee:
+            appointment = Appointment.objects.filter(id=slug).first()
+
+            if appointment:
+                if attendee == "respondent":
+                    appointment.respondent_attending = True
+
+                if attendee == "complainant":
+                    appointment.complainant_attending = True
+
+                appointment.save()
+            
+                return Response({
+                    'status': "Saved",
+                })
+            else:
+                return Response({
+                    'appointment_id': "Appointment not found",
+                })
+        else:
+            return Response({
+                'attendee': "Please add field",
+            })
+
+
+class rescheduleAppointment(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        required_fields = [
+            "date", "time"
+        ]
+
+        errors = {}
+
+        for field in required_fields:
+            if not request.data.get(field):
+                errors[field] = "This field is required"
+
+        if errors:
+            return Response(errors)
+        
+
+        appointment = Appointment.objects.filter(id=slug).first()
+
+        if appointment:
+            appointment.date = request.data.get("date")
+            appointment.time = request.data.get("time")
+            appointment.save()
+
+            return Response({
+                'status': "Saved",
+            })
+        else:
+            return Response({
+                'appointment_id': "Appointment not found",
+            })
+        
+
+
+class rescheduleRequestNotification(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        required_fields = [
+            "date", "time", "requester"
+        ]
+
+        errors = {}
+
+        for field in required_fields:
+            if not request.data.get(field):
+                errors[field] = "This field is required"
+
+        if errors:
+            return Response(errors)
+        
+
+        appointment = Appointment.objects.filter(id=slug).first()
+
+        if appointment:
+            notification = Notification.objects.filter(appointment=appointment).first()
+
+            if notification:
+                notification.date = request.data.get("date")
+                notification.time = request.data.get("time")
+                notification.save()
+            else:
+                notification = Notification()
+                notification.date = request.data.get("date")
+                notification.time = request.data.get("time")
+                notification.appointment = appointment
+                notification.requester = request.data.get("requester")
+                notification.case_officer = appointment.case_officer
+                
+                notification.save()
+
+            return Response({
+                'status': "Saved",
+            })
+        else:
+            return Response({
+                'appointment_id': "Appointment not found",
             })

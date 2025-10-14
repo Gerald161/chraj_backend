@@ -9,4 +9,10 @@ urlpatterns = [
     path('hearing/<slug:slug>', views.hearing.as_view()),
     path('mediation/<slug:slug>', views.mediation.as_view()),
     path('decision/<slug:slug>', views.decision.as_view()),
+    path('get-all-appointments', views.allAppointments.as_view()),
+    path('get-all-notifications', views.allNotifications.as_view()),
+    path('get-appointment/<slug:slug>', views.appointment.as_view()),
+    path('confirm_attendace/<slug:slug>', views.confirmAttendance.as_view()),
+    path('reschedule-appointment/<slug:slug>', views.rescheduleAppointment.as_view()),
+    path('reschedule-request-notification/<slug:slug>', views.rescheduleRequestNotification.as_view()),
 ]
