@@ -35,12 +35,12 @@ class Complaint(models.Model):
 
 class CaseFile(models.Model):
     STEP_CHOICES = [
-        ("initial", "initial"), ("investigation", "investigation"), 
-        ("hearing", "hearing")
+        ("initial", "initial"), ("investigation", "investigation")
     ]
 
     document = models.FileField()
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE)
+    name = models.CharField(default="file")
     step = models.CharField(default="initial", choices=STEP_CHOICES)
 
 
@@ -55,13 +55,7 @@ class CaseFile(models.Model):
 
 
 class RequestedDocument(models.Model):    
-    STEP_CHOICES = [
-        ("investigation", "investigation"), 
-        ("hearing", "hearing")
-    ]
-
     name = models.CharField(max_length=300)
-    step_requested = models.CharField(default="investigation", choices=STEP_CHOICES)
     complaint = models.ForeignKey(Complaint, on_delete=models.CASCADE)
 
 

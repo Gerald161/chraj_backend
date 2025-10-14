@@ -139,6 +139,40 @@ class investigationFindings(APIView):
         })    
 
 
+class uploadInvestigationFiles(APIView):
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+        
+        complaint = Complaint.objects.filter(case_id__iexact=slug).first()
+
+        if complaint:
+            if request.FILES:
+                for field_name, files in request.FILES.lists():
+                    for file in files:
+                        case_file = CaseFile()
+
+                        case_file.document = file
+
+                        case_file.complaint = complaint
+
+                        case_file.name = field_name
+
+                        case_file.step = "investigation"
+
+                        case_file.save()
+                
+                return Response({
+                    'status': "Files Uploaded", 
+                })
+            else:
+                return Response({
+                    'files': "Please upload at least one file", 
+                })
+        else:
+            return Response({
+            'complaint': "Case not found", 
+        })    
+
 
 class hearing(APIView):
     permission_classes = [IsAuthenticated]
