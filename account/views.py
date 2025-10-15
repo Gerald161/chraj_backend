@@ -178,7 +178,7 @@ class RequestPasswordResetEmail(APIView):
         User = get_user_model()
 
         if User.objects.filter(email=email.lower().strip()).exists():
-            user = User.objects.get(email=email)
+            user = User.objects.get(email=email.lower().strip())
             
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
 
@@ -186,7 +186,7 @@ class RequestPasswordResetEmail(APIView):
 
             send_mail(
                 "Reset email",
-                f"http://127.0.0.1:8000/account/password-reset/{uidb64}/{token}/",
+                f"http://localhost:3000/confirm-password?id={uidb64}&token={token}/",
                 "",
                 [email],
                 fail_silently=False,
@@ -229,7 +229,7 @@ class PasswordTokenCheckAPI(APIView):
             user = User.objects.get(id=id)
 
             if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': 'Token no longer valid'})
+                return Response({'error': 'Token not valid'})
                 
             user.set_password(password)
 
