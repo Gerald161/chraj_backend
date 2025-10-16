@@ -72,13 +72,52 @@ class unassignedCases(APIView):
         all_complaints = []
 
         for complaint in complaints:
+            case_files = CaseFile.objects.filter(complaint=complaint)
+
+            all_case_files = []
+
+            for case_file in case_files:
+                all_case_files.append(case_file.document.name)
+
             all_complaints.append({
-                "case_id": complaint.case_id, 
+                "id": complaint.case_id, 
                 "title": complaint.title,
-                "detail": complaint.description,
-                "date_filed": complaint.time_filed.date(),
+                "description": complaint.description,
+                "dateSubmitted": complaint.time_filed.date(),
                 "complainant": complaint.complainant,
                 "respondent": complaint.respondent,
+                "documents": all_case_files
+            })
+
+        return Response({
+            'all_complaints': all_complaints, 
+        })
+    
+
+class myCases(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        complaints = Complaint.objects.filter(case_officer=request.user).filter(isWithinMandate=True)
+
+        all_complaints = []
+
+        for complaint in complaints:
+            case_files = CaseFile.objects.filter(complaint=complaint)
+
+            all_case_files = []
+
+            for case_file in case_files:
+                all_case_files.append(case_file.document.name)
+
+            all_complaints.append({
+                "id": complaint.case_id, 
+                "title": complaint.title,
+                "description": complaint.description,
+                "dateSubmitted": complaint.time_filed.date(),
+                "complainant": complaint.complainant,
+                "respondent": complaint.respondent,
+                "documents": all_case_files
             })
 
         return Response({
