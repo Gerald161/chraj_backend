@@ -2,6 +2,7 @@ from .models import Complaint, CaseFile, RequestedDocument, Appointment, Appoint
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.core.mail import send_mail
 
 class createComplaint(APIView):
     def post(self, request, *args, **kwargs):
@@ -47,8 +48,41 @@ class createComplaint(APIView):
 
                 case_file.save()
 
+
+        send_mail(
+            f"Complaint filed against you at CHRAJ",
+            f"Visit the link http://localhost:3000/check-complaint/ with the ref ID '{complaint.respondent_reference_id}' to view details about the case",
+            "",
+            [complaint.respondent_email],
+            fail_silently=False,
+        )
+
         return Response({
             'status': "saved", 
+            "complainant_ref_id": complaint.complainant_reference_id
+        })
+    
+
+class unassignedCases(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        complaints = Complaint.objects.filter(case_officer=None)
+
+        all_complaints = []
+
+        for complaint in complaints:
+            all_complaints.append({
+                "case_id": complaint.case_id, 
+                "title": complaint.title,
+                "detail": complaint.description,
+                "date_filed": complaint.time_filed.date(),
+                "complainant": complaint.complainant,
+                "respondent": complaint.respondent,
+            })
+
+        return Response({
+            'all_complaints': all_complaints, 
         })
     
 

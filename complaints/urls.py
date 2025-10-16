@@ -4,6 +4,7 @@ from django.contrib.auth import views as auth_views
 
 urlpatterns = [
     path('create-complaint', views.createComplaint.as_view()),
+    path('unassigned-cases', views.unassignedCases.as_view()),
     path('mandate-decision', views.mandateDecision.as_view()),
     path('investigation-findings/<slug:slug>', views.investigationFindings.as_view()),
     path('upload-investigation-files/<slug:slug>', views.uploadInvestigationFiles.as_view()),
