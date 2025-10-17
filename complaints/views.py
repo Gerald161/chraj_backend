@@ -117,7 +117,8 @@ class myCases(APIView):
                 "dateSubmitted": complaint.time_filed.date(),
                 "complainant": complaint.complainant,
                 "respondent": complaint.respondent,
-                "documents": all_case_files
+                "documents": all_case_files,
+                "status": complaint.case_status
             })
 
         return Response({
