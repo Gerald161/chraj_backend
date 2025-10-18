@@ -110,15 +110,24 @@ class myCases(APIView):
             for case_file in case_files:
                 all_case_files.append(case_file.document.name)
 
+            all_requested_docs = []    
+
+            requested_docs = RequestedDocument.objects.filter(complaint=complaint)
+
+            for requested_doc in requested_docs:
+                all_requested_docs.append(requested_doc.name)
+
             all_complaints.append({
                 "id": complaint.case_id, 
                 "title": complaint.title,
                 "description": complaint.description,
                 "dateSubmitted": complaint.time_filed.date(),
                 "complainant": complaint.complainant,
+                "investigation_notes": complaint.investigation_notes,
                 "respondent": complaint.respondent,
                 "documents": all_case_files,
-                "status": complaint.case_status
+                "status": complaint.case_status,
+                "docRequests": all_requested_docs
             })
 
         return Response({
@@ -164,7 +173,37 @@ class mandateDecision(APIView):
         else:
             return Response({
                 'case_id': "No such record", 
-            })        
+            })      
+
+
+class advanceStep(APIView):
+      permission_classes = [IsAuthenticated]
+
+      def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        complaint = Complaint.objects.filter(case_id__iexact=slug).first()
+
+        if complaint:
+            status = request.data.get("status")
+
+            if status:
+                complaint.case_status = status
+
+                complaint.save()
+
+                return Response({
+                    'status': "saved", 
+                })
+            else:
+                return Response({
+                    'status': "add status field", 
+                })
+        else:
+            return Response({
+            'complaint': "Case not found", 
+        })  
+
 
 
 class investigationFindings(APIView):
@@ -185,15 +224,11 @@ class investigationFindings(APIView):
         if complaint:
             complaint.investigation_notes = investigation_notes
 
-            complaint.case_status = "hearing"
-
-            complaint.save()
-
             for key, value in request.data.items():
                 if key == "investigation_notes":
                     continue
 
-                if RequestedDocument.objects.filter(complaint=complaint).filter(name=value).filter(step_requested="investigation").first():
+                if RequestedDocument.objects.filter(complaint=complaint).filter(name=value).first():
                     continue
 
                 requestedDocument = RequestedDocument()
@@ -205,7 +240,7 @@ class investigationFindings(APIView):
                 requestedDocument.save()
             
             return Response({
-                'status': "Investigation step complete", 
+                'status': "complete", 
             })
         else:
             return Response({
@@ -300,9 +335,9 @@ class hearing(APIView):
 
                 appointmentDocument.save()
 
-            complaint.case_status = "mediation"
+            # complaint.case_status = "mediation"
 
-            complaint.save()
+            # complaint.save()
 
             return Response({
                 'status': "Saved", 
@@ -351,9 +386,9 @@ class mediation(APIView):
 
             appointment.save()
 
-            complaint.case_status = "decision"
+            # complaint.case_status = "decision"
 
-            complaint.save()
+            # complaint.save()
 
             return Response({
                 'status': "Saved", 
@@ -389,7 +424,7 @@ class decision(APIView):
         if complaint:
             complaint.final_officer_notes = request.data.get("final_officer_notes")
 
-            complaint.case_status = "resolved"
+            # complaint.case_status = "resolved"
 
             complaint.resolved_positively = eval(request.data.get("resolved_positively"))
 
