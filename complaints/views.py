@@ -128,6 +128,7 @@ class myCases(APIView):
 
                 if appointment.attendee == "complainant":
                     appointmentDocuments = AppointmentDocument.objects.filter(
+                        appointment=appointment,
                         appointment__attendee="complainant"
                     )
 
@@ -136,6 +137,7 @@ class myCases(APIView):
 
                 if appointment.attendee == "respondent":
                     appointmentDocuments = AppointmentDocument.objects.filter(
+                        appointment=appointment,
                         appointment__attendee="respondent"
                     )
 
@@ -155,6 +157,27 @@ class myCases(APIView):
                     "complainant_attending": appointment.complainant_attending,
                 })
 
+            mediation_appointment = Appointment.objects.filter(complaint=complaint).filter(attendee="both").first()
+
+            mediation_data = {
+                "date": "",
+                "time": "",
+                "venue": "",
+                "purpose": "",
+                "respondent_attending": "",
+                "complainant_attending": ""
+            }
+
+            if mediation_appointment:
+                mediation_data = {
+                    "date": mediation_appointment.date,
+                    "time": mediation_appointment.time,
+                    "venue": mediation_appointment.venue,
+                    "purpose": mediation_appointment.purpose,
+                    "respondent_attending": mediation_appointment.respondent_attending,
+                    "complainant_attending": mediation_appointment.complainant_attending
+                }
+
             all_complaints.append({
                 "id": complaint.case_id, 
                 "title": complaint.title,
@@ -167,6 +190,7 @@ class myCases(APIView):
                 "status": complaint.case_status,
                 "docRequests": all_requested_docs,
                 "hearings": all_hearing_appointments,
+                "mediation": mediation_data
             })
 
         return Response({
@@ -421,11 +445,9 @@ class mediation(APIView):
 
             appointment.complaint = complaint
 
+            appointment.case_officer = request.user
+
             appointment.save()
-
-            # complaint.case_status = "decision"
-
-            # complaint.save()
 
             return Response({
                 'status': "Saved", 
