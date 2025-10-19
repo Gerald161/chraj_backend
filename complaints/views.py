@@ -143,15 +143,16 @@ class myCases(APIView):
                         all_respondent_appointment_documents.append(appointmentDocument.name)
 
                 all_hearing_appointments.append({
+                    "id": appointment.id,
                     "date": appointment.date,
                     "time": appointment.time,
                     "venue": appointment.venue,
+                    "attendees": [appointment.attendee],
                     "purpose": appointment.purpose,
-                    "attendee": appointment.attendee,
+                    "itemsForRespondent": all_complainant_appointment_documents,
+                    "itemsForComplainant": all_respondent_appointment_documents,
                     "respondent_attending": appointment.respondent_attending,
                     "complainant_attending": appointment.complainant_attending,
-                    "all_complainant_appointment_documents": all_complainant_appointment_documents,
-                    "all_respondent_appointment_documents": all_respondent_appointment_documents
                 })
 
             all_complaints.append({
@@ -165,7 +166,7 @@ class myCases(APIView):
                 "documents": all_case_files,
                 "status": complaint.case_status,
                 "docRequests": all_requested_docs,
-                "hearing": all_hearing_appointments,
+                "hearings": all_hearing_appointments,
             })
 
         return Response({
