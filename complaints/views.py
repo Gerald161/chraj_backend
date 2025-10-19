@@ -117,6 +117,43 @@ class myCases(APIView):
             for requested_doc in requested_docs:
                 all_requested_docs.append(requested_doc.name)
 
+            all_hearing_appointments = []
+
+            hearing_appointments = Appointment.objects.filter(complaint=complaint).filter(type="hearing").exclude(attendee="both")
+
+            for appointment in hearing_appointments:
+                all_complainant_appointment_documents = []
+
+                all_respondent_appointment_documents = []
+
+                if appointment.attendee == "complainant":
+                    appointmentDocuments = AppointmentDocument.objects.filter(
+                        appointment__attendee="complainant"
+                    )
+
+                    for appointmentDocument in appointmentDocuments:
+                        all_complainant_appointment_documents.append(appointmentDocument.name)
+
+                if appointment.attendee == "respondent":
+                    appointmentDocuments = AppointmentDocument.objects.filter(
+                        appointment__attendee="respondent"
+                    )
+
+                    for appointmentDocument in appointmentDocuments:
+                        all_respondent_appointment_documents.append(appointmentDocument.name)
+
+                all_hearing_appointments.append({
+                    "date": appointment.date,
+                    "time": appointment.time,
+                    "venue": appointment.venue,
+                    "purpose": appointment.purpose,
+                    "attendee": appointment.attendee,
+                    "respondent_attending": appointment.respondent_attending,
+                    "complainant_attending": appointment.complainant_attending,
+                    "all_complainant_appointment_documents": all_complainant_appointment_documents,
+                    "all_respondent_appointment_documents": all_respondent_appointment_documents
+                })
+
             all_complaints.append({
                 "id": complaint.case_id, 
                 "title": complaint.title,
@@ -127,7 +164,8 @@ class myCases(APIView):
                 "respondent": complaint.respondent,
                 "documents": all_case_files,
                 "status": complaint.case_status,
-                "docRequests": all_requested_docs
+                "docRequests": all_requested_docs,
+                "hearing": all_hearing_appointments,
             })
 
         return Response({
@@ -321,6 +359,8 @@ class hearing(APIView):
 
             appointment.complaint = complaint
 
+            appointment.case_officer = request.user
+
             appointment.save()
 
             for key, value in request.data.items():
@@ -334,10 +374,6 @@ class hearing(APIView):
                 appointmentDocument.name = value
 
                 appointmentDocument.save()
-
-            # complaint.case_status = "mediation"
-
-            # complaint.save()
 
             return Response({
                 'status': "Saved", 
