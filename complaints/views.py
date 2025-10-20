@@ -483,7 +483,7 @@ class decision(APIView):
         if complaint:
             complaint.final_officer_notes = request.data.get("final_officer_notes")
 
-            # complaint.case_status = "resolved"
+            complaint.case_status = "resolved"
 
             complaint.resolved_positively = eval(request.data.get("resolved_positively"))
 
@@ -502,7 +502,7 @@ class decision(APIView):
                 term.save()
 
             return Response({
-                'status': "Saved",
+                'status': "saved",
                 "case": "resolved" 
             })
         else:
