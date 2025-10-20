@@ -178,6 +178,13 @@ class myCases(APIView):
                     "complainant_attending": mediation_appointment.complainant_attending
                 }
 
+            all_terms = []
+
+            terms = Term.objects.filter(complaint=complaint)
+
+            for term in terms:
+                all_terms.append(term.term_detail)
+
             all_complaints.append({
                 "id": complaint.case_id, 
                 "title": complaint.title,
@@ -190,7 +197,10 @@ class myCases(APIView):
                 "status": complaint.case_status,
                 "docRequests": all_requested_docs,
                 "hearings": all_hearing_appointments,
-                "mediation": mediation_data
+                "mediation": mediation_data,
+                "terms": all_terms,
+                "resolved_positively": complaint.resolved_positively,
+                "final_notes": complaint.final_officer_notes
             })
 
         return Response({
