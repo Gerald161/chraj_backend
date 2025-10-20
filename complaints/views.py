@@ -539,7 +539,11 @@ class allAppointments(APIView):
                 "venue": appointment.venue,
                 "case_id": appointment.complaint.case_id,
                 "complainant": appointment.complaint.complainant,
-                "respondent": appointment.complaint.respondent
+                "respondent": appointment.complaint.respondent,
+                "status": appointment.complaint.case_status,
+                "complainant_attending": appointment.complainant_attending,
+                "respondent_attending": appointment.respondent_attending,
+                "attendee": appointment.attendee
             })
 
         return Response({
@@ -565,7 +569,10 @@ class appointment(APIView):
                     "venue": appointment.venue,
                     "case_id": appointment.complaint.case_id,
                     "complainant": appointment.complaint.complainant,
-                    "respondent": appointment.complaint.respondent
+                    "respondent": appointment.complaint.respondent,
+                    "complainant_attending": appointment.complainant_attending,
+                    "respondent_attending": appointment.respondent_attending,
+                    "attendee": appointment.attendee
                 }
             })
         else:
@@ -655,7 +662,7 @@ class rescheduleAppointment(APIView):
             appointment.save()
 
             return Response({
-                'status': "Saved",
+                'status': "saved",
             })
         else:
             return Response({
