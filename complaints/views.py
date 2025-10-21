@@ -218,6 +218,11 @@ class fileComplaintCase(APIView):
         if slug.lower().startswith('r'):
             complaint = Complaint.objects.filter(respondent_reference_id__iexact=slug).first()
 
+        if not slug.lower().startswith(('c', 'r')):
+            return Response({
+                'error': "Case not found", 
+            })
+
         if complaint:
             case_files = CaseFile.objects.filter(complaint=complaint)
 
@@ -283,6 +288,7 @@ class fileComplaintCase(APIView):
             return Response({
                 'complaint': {
                     "id": complaint.case_id, 
+                    "case_officer": complaint.case_officer.full_name,
                     "status": complaint.case_status,
                     "title": complaint.title,
                     "description": complaint.description,
@@ -298,7 +304,7 @@ class fileComplaintCase(APIView):
             })
         else:
             return Response({
-            'complaint': "Case not found", 
+            'error': "Case not found", 
         })
 
 
