@@ -7,6 +7,7 @@ urlpatterns = [
     path('unassigned-cases', views.unassignedCases.as_view()),
     path('my-cases', views.myCases.as_view()),
     path('mandate-decision', views.mandateDecision.as_view()),
+    path('get-file-complaint-case/<slug:slug>', views.fileComplaintCase.as_view()),
     path('investigation-findings/<slug:slug>', views.investigationFindings.as_view()),
     path('upload-investigation-files/<slug:slug>', views.uploadInvestigationFiles.as_view()),
     path('advance-step/<slug:slug>', views.advanceStep.as_view()),

@@ -119,7 +119,7 @@ class myCases(APIView):
 
             all_hearing_appointments = []
 
-            hearing_appointments = Appointment.objects.filter(complaint=complaint).filter(type="hearing").exclude(attendee="both")
+            hearing_appointments = Appointment.objects.filter(complaint=complaint).filter(type="hearing")
 
             for appointment in hearing_appointments:
                 all_complainant_appointment_documents = []
@@ -207,6 +207,100 @@ class myCases(APIView):
             'all_complaints': all_complaints, 
         })
     
+
+class fileComplaintCase(APIView):
+    def get(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        if slug.lower().startswith('c'):
+            complaint = Complaint.objects.filter(complainant_reference_id__iexact=slug).first()
+
+        if slug.lower().startswith('r'):
+            complaint = Complaint.objects.filter(respondent_reference_id__iexact=slug).first()
+
+        if complaint:
+            case_files = CaseFile.objects.filter(complaint=complaint)
+
+            all_case_files = []
+
+            for case_file in case_files:
+                all_case_files.append(case_file.document.name)
+
+            requestedDocuments = RequestedDocument.objects.filter(complaint=complaint)
+
+            all_requestedDocuments = []
+
+            for requestedDocument in requestedDocuments:
+                all_requestedDocuments.append(requestedDocument.name)
+
+            all_terms = []
+
+            terms = Term.objects.filter(complaint=complaint)
+
+            for term in terms:
+                all_terms.append(term.term_detail)
+
+
+            your_hearing_appointment = {
+                "id": "",
+                "date": "",
+                "time": ""
+            }
+
+            if slug.lower().startswith('c'):
+                hearing_appointment = Appointment.objects.filter(complaint=complaint).filter(type="hearing").filter(attendee="complainant").first()
+
+            if slug.lower().startswith('r'):
+                hearing_appointment = Appointment.objects.filter(complaint=complaint).filter(type="hearing").filter(attendee="respondent").first()
+
+            if hearing_appointment:
+                your_hearing_appointment = {
+                    "id": hearing_appointment.id,
+                    "date": hearing_appointment.date,
+                    "time": hearing_appointment.time
+                }
+
+                hearing_appointment_documents = []
+
+                if slug.lower().startswith('c'):
+                    appointmentDocuments = AppointmentDocument.objects.filter(
+                        appointment=hearing_appointment,
+                        appointment__attendee="complainant"
+                    )
+
+                    for appointmentDocument in appointmentDocuments:
+                        hearing_appointment_documents.append(appointmentDocument.name)
+
+                if slug.lower().startswith('r'):
+                    appointmentDocuments = AppointmentDocument.objects.filter(
+                        appointment=hearing_appointment,
+                        appointment__attendee="respondent"
+                    )
+
+                    for appointmentDocument in appointmentDocuments:
+                        hearing_appointment_documents.append(appointmentDocument.name)
+
+            return Response({
+                'complaint': {
+                    "id": complaint.case_id, 
+                    "status": complaint.case_status,
+                    "title": complaint.title,
+                    "description": complaint.description,
+                    "dateSubmitted": complaint.time_filed.date(),
+                    "complainant": complaint.complainant,
+                    "respondent": complaint.respondent,
+                    "case_files": all_case_files,
+                    "requested_documents": all_requestedDocuments,
+                    "hearing_appointment_documents": hearing_appointment_documents,
+                    "terms": all_terms,
+                    "your_hearing_appointment": your_hearing_appointment
+                }, 
+            })
+        else:
+            return Response({
+            'complaint': "Case not found", 
+        })
+
 
 class mandateDecision(APIView):
     permission_classes = [IsAuthenticated]
