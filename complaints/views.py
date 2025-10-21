@@ -254,9 +254,11 @@ class fileComplaintCase(APIView):
 
             if slug.lower().startswith('c'):
                 hearing_appointment = Appointment.objects.filter(complaint=complaint).filter(type="hearing").filter(attendee="complainant").first()
+                view_type = "complainant"
 
             if slug.lower().startswith('r'):
                 hearing_appointment = Appointment.objects.filter(complaint=complaint).filter(type="hearing").filter(attendee="respondent").first()
+                view_type = "respondent"
 
             if hearing_appointment:
                 your_hearing_appointment = {
@@ -299,7 +301,8 @@ class fileComplaintCase(APIView):
                     "requested_documents": all_requestedDocuments,
                     "hearing_appointment_documents": hearing_appointment_documents,
                     "terms": all_terms,
-                    "your_hearing_appointment": your_hearing_appointment
+                    "your_hearing_appointment": your_hearing_appointment,
+                    "view_type": view_type
                 }, 
             })
         else:
