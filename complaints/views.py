@@ -807,6 +807,28 @@ class allNotifications(APIView):
         return Response({
             "notifications": all_notifications
         })    
+    
+
+class readNotification(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        slug = self.kwargs['slug']
+
+        notification = Notification.objects.filter(id=slug).first()
+
+        if notification:
+            notification.is_read = True
+
+            notification.save()
+
+            return Response({
+                "status": "saved"
+            })
+        else:
+            return Response({
+                "notification": "not found"
+            })    
 
 
 class confirmAttendance(APIView):
