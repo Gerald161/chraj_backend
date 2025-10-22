@@ -258,6 +258,18 @@ class fileComplaintCase(APIView):
                 "time": ""
             }
 
+            your_mediation_appointment = {
+                "id": "",
+                "date": "",
+                "time": "",
+                "venue": ""
+            }
+
+            mediation_requested_reschedule = {
+                "date": "",
+                "time": ""
+            }
+
             if slug.lower().startswith('c'):
                 hearing_appointment = Appointment.objects.filter(complaint=complaint).filter(type="hearing").filter(attendee="complainant").first()
 
@@ -268,6 +280,18 @@ class fileComplaintCase(APIView):
                         "date": rescheduled_date.date,
                         "time": rescheduled_date.time
                     }
+
+
+                mediation_appointment = Appointment.objects.filter(complaint=complaint).filter(type="mediation").filter(attendee="both").first()
+
+                mediation_rescheduled_date = Notification.objects.filter(appointment=mediation_appointment).filter(requester="complainant").first()
+
+                if mediation_rescheduled_date:
+                    mediation_requested_reschedule = {
+                        "date": mediation_rescheduled_date.date,
+                        "time": mediation_rescheduled_date.time
+                    }
+
 
                 view_type = "complainant"
 
@@ -282,7 +306,32 @@ class fileComplaintCase(APIView):
                         "time": rescheduled_date.time
                     }
 
+
+                mediation_appointment = Appointment.objects.filter(complaint=complaint).filter(type="mediation").filter(attendee="both").first()
+
+                mediation_rescheduled_date = Notification.objects.filter(appointment=mediation_appointment).filter(requester="respondent").first()
+
+                if mediation_rescheduled_date:
+                    mediation_requested_reschedule = {
+                        "date": mediation_rescheduled_date.date,
+                        "time": mediation_rescheduled_date.time
+                    }
+
+
                 view_type = "respondent"
+
+            if mediation_appointment:
+                your_mediation_appointment = {
+                    "id": mediation_appointment.id,
+                    "date": mediation_appointment.date,
+                    "time": mediation_appointment.time,
+                    "venue": mediation_appointment.venue,
+                    "purpose": mediation_appointment.purpose,
+                    "respondent_attending": mediation_appointment.respondent_attending,
+                    "complainant_attending": mediation_appointment.complainant_attending,
+                    "requested_reschedule": mediation_requested_reschedule
+                }
+
 
             if hearing_appointment:
                 your_hearing_appointment = {
@@ -290,6 +339,7 @@ class fileComplaintCase(APIView):
                     "date": hearing_appointment.date,
                     "time": hearing_appointment.time,
                     "venue": hearing_appointment.venue,
+                    "purpose": hearing_appointment.purpose,
                     "respondent_attending": hearing_appointment.respondent_attending,
                     "complainant_attending": hearing_appointment.complainant_attending,
                     "requested_reschedule": requested_reschedule
@@ -331,7 +381,8 @@ class fileComplaintCase(APIView):
                     "terms": all_terms,
                     "your_hearing_appointment": your_hearing_appointment,
                     "view_type": view_type,
-                    "mandate_decision": complaint.isWithinMandate
+                    "mandate_decision": complaint.isWithinMandate,
+                    "your_mediation_appointment": your_mediation_appointment
                 }, 
             })
         else:
