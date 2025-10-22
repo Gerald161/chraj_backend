@@ -253,12 +253,35 @@ class fileComplaintCase(APIView):
                 "venue": ""
             }
 
+            requested_reschedule = {
+                "date": "",
+                "time": ""
+            }
+
             if slug.lower().startswith('c'):
                 hearing_appointment = Appointment.objects.filter(complaint=complaint).filter(type="hearing").filter(attendee="complainant").first()
+
+                rescheduled_date = Notification.objects.filter(appointment=hearing_appointment).filter(requester="complainant").first()
+
+                if rescheduled_date:
+                    requested_reschedule = {
+                        "date": rescheduled_date.date,
+                        "time": rescheduled_date.time
+                    }
+
                 view_type = "complainant"
 
             if slug.lower().startswith('r'):
                 hearing_appointment = Appointment.objects.filter(complaint=complaint).filter(type="hearing").filter(attendee="respondent").first()
+
+                rescheduled_date = Notification.objects.filter(appointment=hearing_appointment).filter(requester="respondent").first()
+
+                if rescheduled_date:
+                    requested_reschedule = {
+                        "date": rescheduled_date.date,
+                        "time": rescheduled_date.time
+                    }
+
                 view_type = "respondent"
 
             if hearing_appointment:
@@ -266,7 +289,10 @@ class fileComplaintCase(APIView):
                     "id": hearing_appointment.id,
                     "date": hearing_appointment.date,
                     "time": hearing_appointment.time,
-                    "venue": hearing_appointment.venue
+                    "venue": hearing_appointment.venue,
+                    "respondent_attending": hearing_appointment.respondent_attending,
+                    "complainant_attending": hearing_appointment.complainant_attending,
+                    "requested_reschedule": requested_reschedule
                 }
 
                 hearing_appointment_documents = []
@@ -778,8 +804,6 @@ class rescheduleAppointment(APIView):
 
 
 class rescheduleRequestNotification(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, *args, **kwargs):
         slug = self.kwargs['slug']
 
@@ -817,7 +841,7 @@ class rescheduleRequestNotification(APIView):
                 notification.save()
 
             return Response({
-                'status': "Saved",
+                'status': "saved",
             })
         else:
             return Response({
