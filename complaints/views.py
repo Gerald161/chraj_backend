@@ -726,7 +726,9 @@ class allAppointments(APIView):
                 "status": appointment.complaint.case_status,
                 "complainant_attending": appointment.complainant_attending,
                 "respondent_attending": appointment.respondent_attending,
-                "attendee": appointment.attendee
+                "attendee": appointment.attendee,
+                "new_date": "",
+                "new_time": "",
             })
 
         return Response({
@@ -781,8 +783,6 @@ class allNotifications(APIView):
 
             all_notifications.append({
                 "requester": notification.requester,
-                "new_date": notification.date,
-                "new_time": notification.time,
                 "is_read": notification.is_read,
                 "type": notification.appointment.type,
                 "user_name": username,
@@ -800,7 +800,9 @@ class allNotifications(APIView):
                     "status": notification.appointment.complaint.case_status,
                     "complainant_attending": notification.appointment.complainant_attending,
                     "respondent_attending": notification.appointment.respondent_attending,
-                    "attendee": notification.appointment.attendee
+                    "attendee": notification.appointment.attendee,
+                    "new_date": notification.date,
+                    "new_time": notification.time,
                 }
             })
 
