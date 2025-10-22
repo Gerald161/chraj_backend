@@ -249,7 +249,8 @@ class fileComplaintCase(APIView):
             your_hearing_appointment = {
                 "id": "",
                 "date": "",
-                "time": ""
+                "time": "",
+                "venue": ""
             }
 
             if slug.lower().startswith('c'):
@@ -264,7 +265,8 @@ class fileComplaintCase(APIView):
                 your_hearing_appointment = {
                     "id": hearing_appointment.id,
                     "date": hearing_appointment.date,
-                    "time": hearing_appointment.time
+                    "time": hearing_appointment.time,
+                    "venue": hearing_appointment.venue
                 }
 
                 hearing_appointment_documents = []
@@ -726,7 +728,7 @@ class confirmAttendance(APIView):
                 appointment.save()
             
                 return Response({
-                    'status': "Saved",
+                    'status': "saved",
                 })
             else:
                 return Response({
