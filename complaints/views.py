@@ -773,12 +773,35 @@ class allNotifications(APIView):
         all_notifications = []
 
         for notification in notifications:
+            if notification.requester == "complainant":
+                username = notification.appointment.complaint.complainant
+            
+            if notification.requester == "respondent":
+                username = notification.appointment.complaint.respondent
+
             all_notifications.append({
                 "requester": notification.requester,
-                "date": notification.date,
-                "time": notification.time,
+                "new_date": notification.date,
+                "new_time": notification.time,
                 "is_read": notification.is_read,
-                "appointment_id": notification.appointment.id
+                "type": notification.appointment.type,
+                "user_name": username,
+                "notification_id": notification.id,
+                "appointment": {
+                    "appointment_id": notification.appointment.id,
+                    "type": notification.appointment.type,
+                    "purpose": notification.appointment.purpose,
+                    "date": notification.appointment.date,
+                    "time": notification.appointment.time,
+                    "venue": notification.appointment.venue,
+                    "case_id": notification.appointment.complaint.case_id,
+                    "complainant": notification.appointment.complaint.complainant,
+                    "respondent": notification.appointment.complaint.respondent,
+                    "status": notification.appointment.complaint.case_status,
+                    "complainant_attending": notification.appointment.complainant_attending,
+                    "respondent_attending": notification.appointment.respondent_attending,
+                    "attendee": notification.appointment.attendee
+                }
             })
 
         return Response({
