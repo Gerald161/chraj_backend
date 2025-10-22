@@ -302,7 +302,8 @@ class fileComplaintCase(APIView):
                     "hearing_appointment_documents": hearing_appointment_documents,
                     "terms": all_terms,
                     "your_hearing_appointment": your_hearing_appointment,
-                    "view_type": view_type
+                    "view_type": view_type,
+                    "mandate_decision": complaint.isWithinMandate
                 }, 
             })
         else:
@@ -447,7 +448,7 @@ class uploadInvestigationFiles(APIView):
                         case_file.save()
                 
                 return Response({
-                    'status': "Files Uploaded", 
+                    'status': "uploaded", 
                 })
             else:
                 return Response({
