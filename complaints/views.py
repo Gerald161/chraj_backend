@@ -250,7 +250,14 @@ class fileComplaintCase(APIView):
                 "id": "",
                 "date": "",
                 "time": "",
-                "venue": ""
+                "venue": "",
+                "purpose": "",
+                "respondent_attending": "",
+                "complainant_attending": "",
+                "requested_reschedule": {
+                    "date": "",
+                    "time": ""
+                }
             }
 
             requested_reschedule = {
@@ -262,7 +269,14 @@ class fileComplaintCase(APIView):
                 "id": "",
                 "date": "",
                 "time": "",
-                "venue": ""
+                "venue": "",
+                "purpose": "",
+                "respondent_attending": "",
+                "complainant_attending": "",
+                "requested_reschedule": {
+                    "date": "",
+                    "time": ""
+                }
             }
 
             mediation_requested_reschedule = {
@@ -332,6 +346,7 @@ class fileComplaintCase(APIView):
                     "requested_reschedule": mediation_requested_reschedule
                 }
 
+            hearing_appointment_documents = []
 
             if hearing_appointment:
                 your_hearing_appointment = {
@@ -344,8 +359,6 @@ class fileComplaintCase(APIView):
                     "complainant_attending": hearing_appointment.complainant_attending,
                     "requested_reschedule": requested_reschedule
                 }
-
-                hearing_appointment_documents = []
 
                 if slug.lower().startswith('c'):
                     appointmentDocuments = AppointmentDocument.objects.filter(
@@ -368,7 +381,7 @@ class fileComplaintCase(APIView):
             return Response({
                 'complaint': {
                     "id": complaint.case_id, 
-                    "case_officer": complaint.case_officer.full_name,
+                    "case_officer": complaint.case_officer.full_name if complaint.case_officer else "",
                     "status": complaint.case_status,
                     "title": complaint.title,
                     "description": complaint.description,
