@@ -493,6 +493,8 @@ class investigationFindings(APIView):
         if complaint:
             complaint.investigation_notes = investigation_notes
 
+            complaint.save()
+
             for key, value in request.data.items():
                 if key == "investigation_notes":
                     continue
